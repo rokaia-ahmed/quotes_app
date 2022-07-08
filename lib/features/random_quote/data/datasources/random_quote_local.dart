@@ -1,4 +1,9 @@
+import 'dart:convert';
+
+import 'package:quotes/core/error/exceptions.dart';
+import 'package:quotes/core/utils/app_strings.dart';
 import 'package:quotes/features/random_quote/data/models/quote_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 abstract class RandomQuoteLocalDataSource{
@@ -7,15 +12,23 @@ abstract class RandomQuoteLocalDataSource{
 }
 
 class RandomQuoteLocalDataSourceImpl implements RandomQuoteLocalDataSource{
+   final SharedPreferences sharedPreferences ;
 
+  RandomQuoteLocalDataSourceImpl({required this.sharedPreferences});
   @override
   Future<QuoteModel> getLastRandomQuote() {
-    throw UnimplementedError();
+   final jsonString = sharedPreferences.getString(AppStrings.cacheRandomQuote);
+   if(jsonString != null){
+    final cacheRandomQuote = Future.value(QuoteModel.fromJson(jsonDecode(jsonString)));
+    return cacheRandomQuote;
+   }else{
+     throw CacheException();
+   }
   }
 
   @override
   Future<void> cacheQuote(QuoteModel quote) {
-    throw UnimplementedError();
+    return sharedPreferences.setString(AppStrings.cacheRandomQuote,jsonEncode(quote) );
   }
 
 }
